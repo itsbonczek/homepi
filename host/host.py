@@ -11,6 +11,7 @@ sys.path.append(os.path.abspath(__file__ + '/../../../'))
 
 from homepi.device.alexa.handler import AlexaRequestHandler
 from homepi.device.alexa.roku import AlexaRokuController
+from homepi.device.alexa.videogames import VideoGamesSceneController
 from homepi.device.core.roku import Roku
 
 myMQTTClient = None
@@ -32,13 +33,17 @@ def configure():
     roku = Roku(os.environ['HOMEPI_ROKU_IP_ADDRESS'])
     roku.initialize()
     roku_controller = AlexaRokuController(roku)
+    video_games_scene_controller = VideoGamesSceneController(roku)
 
     controllers = {
         'appliance-001' : roku_controller
     }
 
-    for scene_id in roku_controller.get_scene_ids():
-        controllers[scene_id] = roku_controller
+    scene_handlers = [roku_controller, video_games_scene_controller]
+
+    for controller in scene_handlers:
+        for scene_id in controller.get_scene_ids():
+            controllers[scene_id] = controller
 
     requestHandler = AlexaRequestHandler(controllers)
 
